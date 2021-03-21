@@ -21,12 +21,13 @@ repositories {
 
 
 
+
 dependencies {
     implementation("org.springframework.boot:spring-boot-starter-jooq")
     implementation("org.springframework.boot:spring-boot-starter-web")
     implementation("com.fasterxml.jackson.module:jackson-module-kotlin")
     implementation("org.jetbrains.kotlin:kotlin-reflect")
-    implementation ("org.springframework.boot:spring-boot-starter-actuator")
+    implementation("org.springframework.boot:spring-boot-starter-actuator")
     implementation("org.jetbrains.kotlin:kotlin-stdlib-jdk8")
     developmentOnly("org.springframework.boot:spring-boot-devtools")
     runtimeOnly("org.postgresql:postgresql")
@@ -58,8 +59,6 @@ jooq {
 
     configurations {
         create("main") {  // name of the jOOQ configuration
-            generateSchemaSourceOnCompilation.set(true)  // default (can be omitted)
-
 
             jooqConfiguration.apply {
                 logging = org.jooq.meta.jaxb.Logging.WARN
@@ -75,21 +74,22 @@ jooq {
                         name = "org.jooq.meta.postgres.PostgresDatabase"
                         inputSchema = "public"
                     }
-                    generate.apply {
+                    generate.apply{
                         isDeprecated = false
+                        isDaos = true
                         isRecords = true
                         isImmutablePojos = true
                         isFluentSetters = true
                     }
                     target.apply {
-                        packageName = "nu.studer.sample"
+                        packageName = "nu.studer.jooq"
                     }
-                    strategy.name = "org.jooq.codegen.DefaultGeneratorStrategy"
                 }
             }
         }
     }
 }
-
-
-tasks.named<nu.studer.gradle.jooq.JooqGenerate>("generateJooq") { allInputsDeclared.set(true) }
+tasks.named<nu.studer.gradle.jooq.JooqGenerate>("generateJooq").configure{
+    dependsOn(tasks.flywayMigrate)
+    allInputsDeclared.set(true)
+}
