@@ -1,24 +1,22 @@
 package com.example.demo.repository
 
-import nu.studer.sample.Tables.TASKS
-import nu.studer.sample.tables.pojos.Tasks
+import nu.studer.jooq.tables.daos.TasksDao
+import nu.studer.jooq.tables.pojos.Tasks
+import org.jooq.Configuration
 import org.jooq.DSLContext
 import org.springframework.stereotype.Repository
 
 @Repository
-class TaskRepository constructor(private val context: DSLContext) {
-    fun getAll(): List<Tasks> = context.selectFrom(TASKS).fetch().map{
-        Tasks(it.value1(), it.value2(), it.value3(), it.value4(), it.value5())
-    }
+class TaskRepository constructor(private val context: DSLContext, private val configuration: Configuration) {
+    private val dao : TasksDao = TasksDao(configuration)
+    fun getAll(): List<Tasks> = dao.findAll()
 
     fun getById(id: Int): Tasks? {
-        val taskRecord = context.selectFrom(TASKS).where(TASKS.ID.eq(id)).fetchOne()
+        return dao.fetchOneById(id)
             ?: return null
-        return Tasks(taskRecord.value1(), taskRecord.value2(), taskRecord.value3(),
-            taskRecord.value4(), taskRecord.value5())
     }
 
-    fun add(task: Tasks) = context.newRecord(TASKS, task).insert()
-    fun update(task: Tasks) = context.newRecord(TASKS, task).update()
-    fun delete(id: Int) = context.deleteFrom(TASKS).where(TASKS.ID.eq(id)).execute()
+    fun add(task: Tasks) = dao.insert(task)
+    fun update(task: Tasks) = dao.update(task)
+    fun delete(id: Int) = dao.deleteById(id)
 }
