@@ -1,5 +1,6 @@
 package com.example.demo.controllers
 
+import com.example.demo.models.Message
 import com.example.demo.repository.TaskRepository
 import nu.studer.sample.tables.pojos.Tasks
 import org.springframework.http.ResponseEntity
@@ -7,17 +8,17 @@ import org.springframework.web.bind.annotation.*
 import java.net.URI
 
 @RestController
-@RequestMapping("api")
+@RequestMapping("api/tasks")
 class TaskController constructor(private val taskRepository: TaskRepository) {
     @GetMapping
     fun getAllTasks() = ResponseEntity.ok(taskRepository.getAll())
 
     @PostMapping
-    fun addTask(@RequestBody task: Tasks): ResponseEntity<Tasks> {
+    fun addTask(@RequestBody task: Tasks): ResponseEntity<Any> {
         val location = URI.create("api/${task.id}")
         if (taskRepository.add(task) == 1)
             return ResponseEntity.created(location).build()
-        return ResponseEntity.badRequest().build()
+        return ResponseEntity.badRequest().body(Message("Something went wrong"))
     }
 
     @GetMapping("{id}")
